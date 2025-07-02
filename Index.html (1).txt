@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>نظام إدارة المخزون - مخزن منفذ المصرية</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #333;
+      direction: rtl;
+    }
+    header, footer {
+      background: linear-gradient(to right, #2e7d32, #1b5e20);
+      color: white;
+      padding: 1.5rem;
+      text-align: center;
+    }
+    header h1 {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      margin: 0;
+    }
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      padding: 1rem;
+    }
+    .dashboard {
+      display: grid;
+      gap: 2rem;
+    }
+    @media (min-width: 992px) {
+      .dashboard {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      border-bottom: 2px solid #2e7d32;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+    }
+    .card-header h2 {
+      margin: 0;
+      font-size: 1.5rem;
+      color: #2e7d32;
+    }
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    .form-group label {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 0.4rem;
+      font-weight: bold;
+    }
+    input, select {
+      width: 100%;
+      padding: 0.7rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    .btn {
+      display: inline-block;
+      padding: 0.7rem 1.5rem;
+      border: none;
+      border-radius: 6px;
+      background: #2e7d32;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .btn:hover {
+      background: #1b5e20;
+    }
+    .btn-block {
+      width: 100%;
+    }
+    .btn-secondary { background: #ff9800; }
+    .btn-secondary:hover { background: #f57c00; }
+    .btn-danger { background: #f44336; }
+    .btn-danger:hover { background: #d32f2f; }
+    .btn-info { background: #2196f3; }
+    .btn-info:hover { background: #1976d2; }
+    .notification {
+      display: none;
+      padding: 1rem;
+      margin: 1rem 0;
+      border-radius: 6px;
+      font-weight: bold;
+      text-align: center;
+    }
+    .success { background: #d4edda; color: #155724; }
+    .error { background: #f8d7da; color: #721c24; }
+    .operations-grid {
+      display: grid;
+      gap: 1rem;
+    }
+    .operation-card {
+      border: 1px solid #eee;
+      border-radius: 8px;
+      padding: 1rem;
+    }
+    .operation-card:hover {
+      border-color: #2e7d32;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .operation-card h3 {
+      margin-top: 0;
+      color: #2e7d32;
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    .stats-grid {
+      display: grid;
+      gap: 1rem;
+      margin-top: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(200px,1fr));
+    }
+    .stat-card {
+      background: linear-gradient(135deg, #1b5e20, #2e7d32);
+      color: white;
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+    }
+    .report-modal {
+      display: none;
+      position: fixed;
+      top:0; left:0; right:0; bottom:0;
+      background: rgba(0,0,0,0.7);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .report-content {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      max-width: 800px;
+      max-height: 80vh;
+      overflow: auto;
+    }
+    .report-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #2e7d32;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1><i class="fas fa-warehouse"></i> نظام إدارة المخزون</h1>
+      <p>مخزن منفذ المصرية - إدارة كاملة للمخزون</p>
+    </div>
+  </header>
+  <main class="container">
+    <div id="notification" class="notification"></div>
+    <div class="dashboard">
+      <div class="card">
+        <div class="card-header">
+          <i class="fas fa-cogs"></i><h2>إدارة العمليات</h2>
+        </div>
+        <div class="form-group">
+          <label for="operationType"><i class="fas fa-tasks"></i> نوع العملية</label>
+          <select id="operationType" onchange="toggleOperationFields()">
+            <option value="">-- اختر نوع العملية --</option>
+            <option value="إضافة">إضافة منتج</option>
+            <option value="خصم">خصم منتج</option>
+            <option value="مرتجع">مرتجع منتج</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="productName"><i class="fas fa-box"></i> اسم المنتج</label>
+          <input type="text" id="productName" placeholder="أدخل اسم المنتج">
+        </div>
+        <div class="form-group">
+          <label for="productQuantity"><i class="fas fa-sort-amount-up"></i> الكمية</label>
+          <input type="number" id="productQuantity" placeholder="أدخل الكمية">
+        </div>
+        <div id="deductFields" style="display:none;">
+          <div class="form-group">
+            <label for="userName"><i class="fas fa-user"></i> اسم المستخدم</label>
+            <input type="text" id="userName" placeholder="اسم المستخدم المسؤول عن الخصم">
+          </div>
+        </div>
+        <div id="returnFields" style="display:none;">
+          <div class="form-group">
+            <label for="returnReason"><i class="fas fa-comment"></i> سبب المرتجع</label>
+            <input type="text" id="returnReason" placeholder="سبب إرجاع المنتج">
+          </div>
+        </div>
+        <button id="submitBtn" class="btn btn-block" onclick="handleOperation()" disabled>
+          <i class="fas fa-check-circle"></i> تأكيد العملية
+        </button>
+      </div>
+    </div>
+  </main>
+  <footer>
+    <p>نظام إدارة المخزون - مخزن منفذ المصرية &copy; 2025</p>
+  </footer>
+  <script>
+    function toggleOperationFields() {
+      const op = document.getElementById('operationType').value;
+      document.getElementById('submitBtn').disabled = !op;
+      document.getElementById('deductFields').style.display = op === 'خصم' ? 'block' : 'none';
+      document.getElementById('returnFields').style.display = op === 'مرتجع' ? 'block' : 'none';
+    }
+    function handleOperation() {
+      alert('تم تنفيذ العملية بنجاح!');
+    }
+  </script>
+</body>
+</html>
